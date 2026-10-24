@@ -49,18 +49,19 @@
     border:1px dashed var(--gold-dim);pointer-events:none;
   }
   #s1 .copy{text-align:right;padding-right:1vw}
-  .mark{display:flex;flex-direction:column;align-items:flex-start;margin-bottom:4vh}
-  .mark svg{width:13vh;height:13vh;margin-bottom:1vh}
+  .mark{display:inline-flex;flex-direction:column;align-items:stretch;width:max-content;margin-bottom:4vh}
+  .mark .row{display:flex;align-items:center;gap:1.4vw;margin-bottom:3.6vh;padding:0 .4vw}
+  .mark svg{width:15vh;height:15vh;flex:none}
   .brand{
     font-family:"Aref Ruqaa","Noto Naskh Arabic","Amiri",serif;
-    font-size:20vh;line-height:1.25;color:var(--cream);
-    padding-top:1vh;
+    font-size:17vh;line-height:1;color:var(--cream);
+    position:relative;top:-1.2vh;
   }
   .brand-latin{
     display:block;
     font-size:2.4vh;letter-spacing:.42em;color:var(--gold);
-    direction:ltr;text-align:right;
-    margin-top:2.5vh;padding-top:2vh;
+    direction:ltr;text-align:center;
+    padding-top:1.8vh;
     border-top:1px solid var(--gold-dim);
   }
   #s1 h1{font-family:"Aref Ruqaa",serif;font-weight:400;font-size:7vh;line-height:1.2;color:var(--cream);margin-bottom:1.6vh}
@@ -132,6 +133,7 @@
   <div class="frame">
     <div class="copy">
       <div class="mark">
+        <div class="row">
         <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
           <path d="M6 28c4 0 4-3 8-3s4 3 8 3" stroke="#CBA66B" stroke-width="1.6" stroke-linecap="round"/>
           <path d="M6 36c4 0 4-3 8-3s4 3 8 3" stroke="#CBA66B" stroke-width="1.6" stroke-linecap="round"/>
@@ -142,6 +144,7 @@
           <path d="M32 26l4 5-4 5-4-5z" fill="#3A2618"/>
         </svg>
         <div class="brand">هبّة</div>
+        </div>
         <div class="brand-latin">HABBA PERFUMES</div>
       </div>
       <h1>هدية الافتتاح</h1>

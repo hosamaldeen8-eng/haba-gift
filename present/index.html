@@ -12,24 +12,33 @@
     --brown:#3A2618; --brown-deep:#231308; --brown-soft:#4A3222;
     --cream:#F2E6D2; --cream-dim:#D9C8AE; --gold:#CBA66B; --gold-dim:#8F7148;
     --red:#B3121B; --red-deep:#5A0509; --red-hot:#E8202B;
-    --ink:#15110D; --paper:#F6F1E8; --paper-dim:#8B8279; --accent:#B3121B;
+    --ink:#15110D; --ink-2:#4A423B; --paper:#F6F1E8; --paper-2:#EDE5D8; --muted:#8B8279;
+    --accent:#B3121B; --ok:#1E7F4F;
+    --ease:cubic-bezier(.22,.8,.25,1);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden}
-  body{
-    font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;
-    background:#000;color:var(--cream);
-    -webkit-font-smoothing:antialiased;
-  }
-  .slide{
-    position:fixed;inset:0;
-    display:none;
-    place-items:center;
-    padding:5vh 6vw;
-    text-align:center;
-  }
-  .slide.active{display:grid}
+  body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:#000;color:var(--cream);-webkit-font-smoothing:antialiased}
 
+  /* ---------- slide engine ---------- */
+  .slide{position:fixed;inset:0;display:grid;place-items:center;padding:5vh 6vw;text-align:center;
+         opacity:0;visibility:hidden;transition:opacity .55s var(--ease),visibility 0s linear .55s}
+  .slide.active{opacity:1;visibility:visible;transition:opacity .55s var(--ease),visibility 0s}
+  .slide.cut{transition:none}                      /* hard cut (alarm) */
+
+  /* entrance animation primitives: .a = animated child, .aN = stagger order */
+  .a{opacity:0;transform:translateY(2.4vh);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+  .active .a{opacity:1;transform:none}
+  .active .a1{transition-delay:.10s}.active .a2{transition-delay:.25s}.active .a3{transition-delay:.40s}
+  .active .a4{transition-delay:.55s}.active .a5{transition-delay:.70s}.active .a6{transition-delay:.85s}
+  /* build steps: revealed by click/arrow */
+  .b{opacity:0;transform:translateY(2vh);transition:opacity .55s var(--ease),transform .55s var(--ease)}
+  .b.on{opacity:1;transform:none}
+
+  .nav{position:fixed;bottom:1.6vh;right:2vw;font-size:1.6vh;color:rgba(255,255,255,.45);direction:ltr;font-family:system-ui}
+  .paper .nav{color:rgba(0,0,0,.35)}
+
+  /* ---------- Slide 1 (approved) ---------- */
   /* ---------- Slide 1: Habba identity + QR ---------- */
   #s1{
     background:radial-gradient(110% 80% at 50% 0%, var(--brown-soft) 0%, var(--brown) 45%, var(--brown-deep) 100%);
@@ -80,51 +89,104 @@
   #s1 .qr svg{width:100%;height:100%;display:block}
   #s1 .qr-cap{font-size:2.6vh;color:var(--gold);letter-spacing:.04em}
 
+
+  /* slide-1 motion: rule draws in, QR card settles */
+  .lockup .latin{position:relative;border-top:0;padding-top:2vh}
+  .lockup .latin::before{content:"";position:absolute;top:0;right:0;height:1px;width:100%;background:var(--gold-dim);
+                         transform:scaleX(0);transform-origin:right;transition:transform .9s var(--ease) .7s}
+  .active .lockup .latin::before{transform:scaleX(1)}
+  #s1 .qr{transition:box-shadow 1.2s var(--ease)}
+  .active #s1 .qr{animation:glow 3.2s ease-in-out 1.4s infinite}
+  @keyframes glow{0%,100%{box-shadow:0 0 0 10px var(--brown),0 0 0 11px var(--gold-dim)}50%{box-shadow:0 0 0 10px var(--brown),0 0 0 11px var(--gold),0 0 6vh rgba(203,166,107,.25)}}
+
   /* ---------- Slide 2: alarm ---------- */
   #s2{background:var(--red-deep);color:#fff}
   #s2.active{animation:flash .55s steps(1,end) infinite}
   @keyframes flash{0%{background:var(--red-hot)}50%{background:var(--red-deep)}}
-  #s2 .bang{
-    width:18vh;height:18vh;border-radius:50%;
-    border:1.2vh solid #fff;
-    display:grid;place-items:center;
-    margin:0 auto 4vh;
-    font-family:"Aref Ruqaa",serif;font-size:13vh;line-height:1;font-weight:700;
-  }
+  #s2 .bang{width:18vh;height:18vh;border-radius:50%;border:1.2vh solid #fff;display:grid;place-items:center;margin:0 auto 4vh;
+            font-family:"Aref Ruqaa",serif;font-size:13vh;line-height:1;font-weight:700;transform:scale(0)}
+  #s2.active .bang{animation:pop .6s cubic-bezier(.34,1.56,.64,1) .05s forwards}
+  @keyframes pop{to{transform:scale(1)}}
   #s2 h1{font-family:"IBM Plex Sans Arabic",sans-serif;font-weight:700;font-size:14vh;line-height:1.15}
+  #s2.active h1{animation:shake .5s .35s}
+  @keyframes shake{0%,100%{transform:none}20%{transform:translateX(-1.2vw)}40%{transform:translateX(1vw)}60%{transform:translateX(-.6vw)}80%{transform:translateX(.4vw)}}
   #s2 p{font-size:4.2vh;margin-top:3vh;font-weight:500;opacity:.95}
   #s2 .hint{position:fixed;bottom:3vh;left:0;right:0;font-size:1.8vh;opacity:.55}
 
-  /* ---------- Slide 3: awareness + live counter ---------- */
-  #s3{background:var(--paper);color:var(--ink)}
-  #s3 .wrap{width:min(92vw,1400px);display:grid;grid-template-columns:1fr auto;gap:5vw;align-items:center;text-align:right}
-  #s3 h1{font-family:"IBM Plex Sans Arabic",sans-serif;font-weight:700;font-size:7.8vh;line-height:1.3;margin-bottom:3vh}
-  #s3 .rule{width:9vw;height:3px;background:var(--accent);margin:0 0 3.5vh}
-  #s3 p{font-size:3.6vh;line-height:1.7;max-width:26ch}
-  #s3 p + p{margin-top:2.2vh;color:#4A423B;font-size:3vh}
-  #s3 .counter{
-    text-align:center;
-    border-right:3px solid var(--accent);
-    padding-right:4vw;
-  }
-  #s3 .counter .n{
-    font-family:"IBM Plex Sans Arabic",sans-serif;font-weight:700;
-    font-size:30vh;line-height:.95;color:var(--accent);
-    font-variant-numeric:tabular-nums;
-    direction:ltr;
-    transition:transform .18s ease-out;
-  }
-  #s3 .counter .n.bump{transform:scale(1.08)}
-  #s3 .counter .l{font-size:3.2vh;font-weight:600;margin-top:1.5vh}
-  #s3 .counter .s{font-size:2.2vh;color:var(--paper-dim);margin-top:.8vh}
-  #s3 .live{display:inline-block;width:1.2vh;height:1.2vh;border-radius:50%;background:#1E9E4F;margin-left:.6vh;vertical-align:middle;animation:pulse 1.4s infinite}
+  /* ---------- lecture slides (paper) ---------- */
+  .paper{background:var(--paper);color:var(--ink)}
+  .paper .wrap{width:min(92vw,1500px);text-align:right}
+  .paper h1{font-weight:700;font-size:7.4vh;line-height:1.3;margin-bottom:2.4vh}
+  .paper .rule{width:9vw;height:3px;background:var(--accent);margin:0 0 3.4vh;transform:scaleX(0);transform-origin:right;transition:transform .8s var(--ease) .35s}
+  .active .rule{transform:scaleX(1)}
+  .paper p{font-size:3.4vh;line-height:1.7}
+  .paper .kicker{display:inline-block;font-size:2.3vh;font-weight:600;color:var(--accent);margin-bottom:1.2vh}
+  .paper .sub{color:var(--ink-2);font-size:2.9vh}
+
+  /* slide 3: counter */
+  #s3 .wrap{display:grid;grid-template-columns:1fr auto;gap:5vw;align-items:center}
+  #s3 .counter{text-align:center;border-right:3px solid var(--accent);padding-right:4vw}
+  #s3 .n{font-weight:700;font-size:30vh;line-height:.95;color:var(--accent);font-variant-numeric:tabular-nums;direction:ltr;transition:transform .18s ease-out}
+  #s3 .n.bump{transform:scale(1.08)}
+  #s3 .l{font-size:3.2vh;font-weight:600;margin-top:1.5vh}
+  #s3 .s{font-size:2.2vh;color:var(--muted);margin-top:.8vh}
+  .live{display:inline-block;width:1.2vh;height:1.2vh;border-radius:50%;background:var(--ok);margin-left:.6vh;vertical-align:middle;animation:pulse 1.4s infinite}
   @keyframes pulse{50%{opacity:.25}}
 
-  /* nav hint */
-  .nav{position:fixed;bottom:1.6vh;right:2vw;font-size:1.6vh;color:rgba(255,255,255,.45);direction:ltr;font-family:system-ui}
-  #s3 .nav{color:rgba(0,0,0,.35)}
-  .nav b{font-weight:600}
-  @media (prefers-reduced-motion:reduce){#s2.active{animation:none;background:var(--red)}}
+  /* slide 4: statement + figures */
+  #s4 .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:4vw;align-items:center}
+  #s4 h1{font-size:9vh}
+  #s4 .figs{display:flex;justify-content:center;gap:2.2vw;align-items:flex-end}
+  #s4 .figs svg{height:36vh;width:auto;display:block}
+  #s4 .figs .f{display:flex;flex-direction:column;align-items:center;gap:1.6vh;font-size:2.6vh;font-weight:600;color:var(--ink-2)}
+
+  /* slide 5: four tactics */
+  #s5 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.6vw;margin-top:1vh}
+  .card{background:#fff;border:1px solid #E3DACB;padding:3.2vh 1.6vw 3vh;text-align:center;min-height:42vh;display:flex;flex-direction:column;align-items:center;position:relative}
+  .card::after{content:"";position:absolute;right:0;left:0;top:0;height:.6vh;background:var(--accent);transform:scaleX(0);transform-origin:right;transition:transform .6s var(--ease) .2s}
+  .card.on::after{transform:scaleX(1)}
+  .card svg{width:11vh;height:11vh;margin-bottom:2vh}
+  .card svg path,.card svg circle,.card svg rect,.card svg line,.card svg polyline{stroke-dasharray:300;stroke-dashoffset:300;transition:stroke-dashoffset 1.1s var(--ease) .25s}
+  .card.on svg path,.card.on svg circle,.card.on svg rect,.card.on svg line,.card.on svg polyline{stroke-dashoffset:0}
+  .card h3{font-size:3.6vh;font-weight:700;margin-bottom:1.2vh}
+  .card p{font-size:2.5vh;line-height:1.6;color:var(--ink-2)}
+  .card .num{position:absolute;top:1.6vh;left:1.4vw;font-size:2vh;color:var(--muted);direction:ltr}
+
+  /* slide 6: three questions + three steps */
+  #s6 .qs{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6vw;margin:1vh 0 5vh}
+  #s6 .q{background:#fff;border:1px solid #E3DACB;padding:3vh 1.5vw;font-size:4vh;font-weight:700;text-align:center}
+  #s6 .q small{display:block;font-size:2.3vh;font-weight:400;color:var(--ink-2);margin-top:1vh}
+  .steps3{display:flex;align-items:center;justify-content:center;gap:0;direction:rtl}
+  .steps3 .st{display:flex;flex-direction:column;align-items:center;gap:1.2vh;width:22vw}
+  .steps3 .dot{width:9vh;height:9vh;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:4vh;transform:scale(.4);transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+  .steps3 .st.on .dot{transform:scale(1)}
+  .steps3 .st span{font-size:3.6vh;font-weight:700}
+  .steps3 .ln{height:4px;width:12vw;background:var(--accent);transform:scaleX(0);transform-origin:right;transition:transform .5s var(--ease)}
+  .steps3 .ln.on{transform:scaleX(1)}
+
+  /* quiz slides */
+  .quiz .wrap{max-width:1300px}
+  .quiz .tag{display:inline-block;background:var(--ink);color:var(--paper);font-size:2.2vh;font-weight:600;padding:.6vh 1.4vw;margin-bottom:2.4vh}
+  .quiz h1{font-size:6.4vh}
+  .opts{display:flex;flex-direction:column;gap:1.6vh;margin-top:3vh}
+  .opt{display:flex;align-items:center;gap:1.4vw;background:#fff;border:1px solid #E3DACB;padding:2.2vh 1.6vw;font-size:3.6vh;font-weight:500;transition:all .5s var(--ease)}
+  .opt .k{flex:none;width:6vh;height:6vh;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-weight:700;font-size:2.8vh;direction:ltr}
+  .quiz.reveal .opt{opacity:.35;transform:scale(.985)}
+  .quiz.reveal .opt.yes{opacity:1;transform:none;background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .quiz.reveal .opt.yes .k{background:var(--ok);border-color:var(--ok);color:#fff}
+  .quiz .why{margin-top:2.6vh;font-size:2.8vh;color:var(--accent);font-weight:600}
+
+  /* closing */
+  #s11{background:var(--ink);color:var(--paper)}
+  #s11 .big{font-size:12vh;font-weight:700;line-height:1.3}
+  #s11 .big span{display:inline-block}
+  #s11 .big .sep{color:var(--accent);margin:0 1.5vw}
+  #s11 p{font-size:3vh;color:var(--muted);margin-top:4vh}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .a,.b{opacity:1;transform:none}
+  }
 </style>
 </head>
 <body>
@@ -133,7 +195,7 @@
 <section class="slide active" id="s1">
   <div class="frame">
     <div class="copy">
-      <div class="lockup" aria-label="Habba Perfumes">
+      <div class="lockup a a1" aria-label="Habba Perfumes">
         <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
           <path d="M6 28c4 0 4-3 8-3s4 3 8 3" stroke="#CBA66B" stroke-width="1.6" stroke-linecap="round"/>
           <path d="M6 36c4 0 4-3 8-3s4 3 8 3" stroke="#CBA66B" stroke-width="1.6" stroke-linecap="round"/>
@@ -146,11 +208,11 @@
         <div class="brand">هبّة</div>
         <div class="latin">HABBA PERFUMES</div>
       </div>
-      <h1>هدية الافتتاح</h1>
-      <p>بمناسبة افتتاح متجر هبّة للعطور، <b>سجّى</b> تهديكم كرت هدية خاص بيوم الافتتاح.</p>
-      <div class="steps">صوّر الكود بكاميرا تلفونك ← اضغط «احجز كرتك»</div>
+      <h1 class="a a2">هدية الافتتاح</h1>
+      <p class="a a3">بمناسبة افتتاح متجر هبّة للعطور، <b>سجّى</b> تهديكم كرت هدية خاص بيوم الافتتاح.</p>
+      <div class="steps a a4">صوّر الكود بكاميرا تلفونك ← اضغط «احجز كرتك»</div>
     </div>
-    <div class="qr-wrap">
+    <div class="qr-wrap a a2">
       <div class="qr">
         <svg viewBox="0 0 37 37" shape-rendering="crispEdges" aria-label="QR">
           <path stroke="#231308" stroke-width="1" d="M2 2.5h7m4 0h2m1 0h1m4 0h1m1 0h2m1 0h1m1 0h7m-33 1h1m5 0h1m2 0h1m2 0h1m3 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m1 0h6m1 0h3m1 0h6m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m2 0h2m2 0h2m1 0h2m1 0h2m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m2 0h1m1 0h2m2 0h1m2 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m2 0h1m3 0h1m1 0h1m1 0h3m1 0h1m2 0h1m1 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-24 1h1m7 0h1m2 0h1m1 0h2m-21 1h2m1 0h2m1 0h1m1 0h1m2 0h7m2 0h2m4 0h2m-31 1h1m4 0h1m2 0h3m1 0h2m1 0h1m3 0h2m1 0h2m1 0h1m1 0h4m-31 1h1m1 0h2m1 0h3m1 0h4m1 0h2m1 0h2m2 0h1m1 0h1m2 0h2m1 0h4m-33 1h1m6 0h1m2 0h2m2 0h1m1 0h3m5 0h2m1 0h2m1 0h1m-31 1h1m1 0h1m1 0h1m1 0h1m5 0h1m2 0h4m1 0h4m1 0h2m1 0h2m1 0h1m-31 1h1m5 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h5m1 0h1m4 0h2m-31 1h2m1 0h4m1 0h4m1 0h1m4 0h1m5 0h2m1 0h1m1 0h1m-30 1h1m5 0h1m5 0h1m1 0h1m2 0h1m1 0h1m3 0h3m1 0h1m1 0h1m-31 1h1m5 0h4m2 0h2m2 0h1m1 0h3m2 0h1m2 0h1m1 0h3m-27 1h1m2 0h2m2 0h3m1 0h1m1 0h1m1 0h4m1 0h1m1 0h4m-30 1h1m2 0h2m1 0h1m2 0h2m2 0h1m2 0h1m3 0h2m1 0h1m3 0h6m-31 1h1m2 0h1m3 0h1m2 0h1m3 0h2m1 0h1m2 0h4m1 0h4m-31 1h1m2 0h4m2 0h1m1 0h2m4 0h1m1 0h1m6 0h2m1 0h1m2 0h1m-33 1h1m1 0h3m2 0h1m1 0h1m3 0h1m1 0h4m2 0h2m1 0h1m1 0h3m1 0h2m-32 1h1m2 0h5m2 0h2m1 0h1m4 0h6m2 0h3m1 0h3m-33 1h1m1 0h2m1 0h1m1 0h1m1 0h2m4 0h4m4 0h2m3 0h1m1 0h2m-32 1h3m3 0h2m1 0h3m2 0h1m1 0h1m2 0h2m1 0h8m1 0h2m-25 1h1m1 0h2m2 0h1m1 0h3m2 0h1m2 0h1m3 0h1m1 0h2m-32 1h7m1 0h1m1 0h1m1 0h2m1 0h3m1 0h2m2 0h2m1 0h1m1 0h3m-31 1h1m5 0h1m6 0h1m2 0h1m3 0h5m3 0h4m-32 1h1m1 0h3m1 0h1m1 0h1m1 0h4m2 0h1m3 0h10m1 0h1m-32 1h1m1 0h3m1 0h1m1 0h1m2 0h1m6 0h1m2 0h3m1 0h1m1 0h1m3 0h1m-32 1h1m1 0h3m1 0h1m3 0h2m1 0h2m1 0h5m7 0h2m1 0h2m-33 1h1m5 0h1m3 0h2m4 0h2m1 0h3m7 0h1m1 0h2m-33 1h7m2 0h1m2 0h1m2 0h2m2 0h1m1 0h1m1 0h4m1 0h1m1 0h1"/>
@@ -159,60 +221,222 @@
       <div class="qr-cap">الكروت محدودة لأول الحاضرين</div>
     </div>
   </div>
-  <div class="nav">1 / 3 &nbsp;·&nbsp; <b>→</b> next</div>
+  <div class="nav">1 / 11 &nbsp;·&nbsp; <b>→</b> next</div>
 </section>
 
-<!-- ============ SLIDE 2 ============ -->
-<section class="slide" id="s2">
+
+<!-- ============ SLIDE 2: alarm ============ -->
+<section class="slide cut" id="s2">
   <div>
     <div class="bang">!</div>
     <h1>وقعتوا في الفخ</h1>
-    <p>هذا مش سحب. هذي تجربة.</p>
+    <p class="a a3">هذا مش سحب. هذي تجربة.</p>
   </div>
   <div class="hint">اضغط أي زر لإيقاف الصوت</div>
-  <div class="nav">2 / 3 &nbsp;·&nbsp; <b>→</b> next</div>
+  <div class="nav">2 / 11</div>
 </section>
 
-<!-- ============ SLIDE 3 ============ -->
-<section class="slide" id="s3">
+<!-- ============ SLIDE 3: الكشف + counter ============ -->
+<section class="slide paper" id="s3">
   <div class="wrap">
     <div>
-      <h1>ما تفتح أي رابط<br>أو رمز QR يقابلك</h1>
+      <span class="kicker a a1">الكشف</span>
+      <h1 class="a a1">هذا العدد صدّق<br>ومسح الكود</h1>
       <div class="rule"></div>
-      <p>الطمع والاستعجال والإجماع — نفس الأساليب الثلاثة تنجح على الموظفين والشركات الكبيرة.</p>
-      <p>قبل ما تمسح أي رمز: من حطّه؟ وليش؟ وهل تقدر تتأكد منه؟<br>وقف — تأكد — بعدها تصرف.</p>
+      <p class="a a3">في دقايق — بدون ما حد يسأل: من حطّه؟ وليش؟</p>
+      <p class="sub a a4">العدّاد مربوط بالصفحة اللي فتحتوها الآن.</p>
     </div>
-    <div class="counter">
+    <div class="counter a a2">
       <div class="n" id="count">0</div>
       <div class="l">شخص صدّق ومسح الكود</div>
       <div class="s"><span class="live"></span>يتحدّث مباشرة</div>
     </div>
   </div>
-  <div class="nav">3 / 3</div>
+  <div class="nav">3 / 11</div>
+</section>
+
+<!-- ============ SLIDE 4: ما تتحشموش ============ -->
+<section class="slide paper" id="s4">
+  <div class="wrap">
+    <div>
+      <h1 class="a a1">ما تتحشّموش.</h1>
+      <div class="rule"></div>
+      <p class="a a3">نفس الأساليب تنجح على أغلب الموظفين —<br>وعلى شركات كبيرة.</p>
+      <p class="sub a a4">الفرق مش في الذكاء. الفرق في <b>الوقفة</b> قبل التصرف.</p>
+    </div>
+    <div class="figs">
+      <div class="f a a2">
+        <svg viewBox="0 0 80 120" fill="none" stroke="#15110D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="40" cy="22" r="14"/><path d="M14 112v-40a26 26 0 0 1 52 0v40"/><path d="M30 60v52M50 60v52"/></svg>
+        <span>موظف</span>
+      </div>
+      <div class="f a a3">
+        <svg viewBox="0 0 80 120" fill="none" stroke="#15110D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="40" cy="22" r="14"/><path d="M14 112v-40a26 26 0 0 1 52 0v40"/><path d="M30 60v52M50 60v52"/><path d="M30 68h20" stroke="#B3121B"/></svg>
+        <span>مدير</span>
+      </div>
+      <div class="f a a4">
+        <svg viewBox="0 0 110 120" fill="none" stroke="#15110D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="10" y="30" width="90" height="82"/><path d="M10 30l45-20 45 20"/>
+          <path d="M28 50h12M50 50h12M72 50h12M28 70h12M50 70h12M72 70h12M28 90h12M72 90h12"/><rect x="48" y="86" width="16" height="26"/></svg>
+        <span>شركة</span>
+      </div>
+    </div>
+  </div>
+  <div class="nav">4 / 11</div>
+</section>
+
+<!-- ============ SLIDE 5: التفكيك ============ -->
+<section class="slide paper" id="s5">
+  <div class="wrap">
+    <span class="kicker a a1">التفكيك</span>
+    <h1 class="a a1">كيف خدعناكم؟ أربعة أساليب.</h1>
+    <div class="rule"></div>
+    <div class="grid">
+      <div class="card b"><span class="num">01</span>
+        <svg viewBox="0 0 64 64" fill="none" stroke="#B3121B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="8" y="26" width="48" height="30"/><path d="M4 18h56v8H4z"/><path d="M32 18v38"/><path d="M32 18c-6-10-18-10-14-2s14 2 14 2zM32 18c6-10 18-10 14-2s-14 2-14 2z"/></svg>
+        <h3>الطمع</h3><p>الجائزة تخلّيك تتصرف قبل ما تفكّر.</p></div>
+      <div class="card b"><span class="num">02</span>
+        <svg viewBox="0 0 64 64" fill="none" stroke="#B3121B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6h28M18 58h28M22 6c0 14 10 18 10 26s-10 12-10 26M42 6c0 14-10 18-10 26s10 12 10 26"/><path d="M26 50h12"/></svg>
+        <h3>الاستعجال</h3><p>«الكروت محدودة» — يمنعك تتأكد قبل ما تتصرف.</p></div>
+      <div class="card b"><span class="num">03</span>
+        <svg viewBox="0 0 64 64" fill="none" stroke="#B3121B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="24" cy="20" r="8"/><circle cx="44" cy="22" r="6"/><path d="M8 54v-8a16 16 0 0 1 32 0v8M36 54v-7a12 12 0 0 1 20 0v7"/><path d="M18 20h12" stroke-width="2"/></svg>
+        <h3>جمهور حقيقي</h3><p>درنا روحنا ناس عاديين… عشان تصدّقونا.</p></div>
+      <div class="card b"><span class="num">04</span>
+        <svg viewBox="0 0 64 64" fill="none" stroke="#B3121B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="14" cy="18" r="5"/><circle cx="32" cy="14" r="5"/><circle cx="50" cy="18" r="5"/><circle cx="23" cy="36" r="5"/><circle cx="41" cy="36" r="5"/>
+          <path d="M12 56l6 6 12-12" stroke-width="3"/><path d="M34 56l6 6 12-12" stroke-width="3"/></svg>
+        <h3>الإجماع</h3><p>الكل مسح الكود… فتقلّد بدل ما تشك.</p></div>
+    </div>
+  </div>
+  <div class="nav">5 / 11 · click to build</div>
+</section>
+
+<!-- ============ SLIDE 6: قبل ما تمسح ============ -->
+<section class="slide paper" id="s6">
+  <div class="wrap">
+    <h1 class="a a1">قبل ما تمسح أي رمز…</h1>
+    <div class="rule"></div>
+    <div class="qs">
+      <div class="q b">من حطّه؟<small>مصدر الكود واضح ومعروف؟</small></div>
+      <div class="q b">وليش؟<small>شن المصلحة اللي وراه؟</small></div>
+      <div class="q b">تقدر تتأكد؟<small>في طريقة تانية تتحقق بيها؟</small></div>
+    </div>
+    <div class="steps3">
+      <div class="st b"><div class="dot">١</div><span>وقف</span></div>
+      <div class="ln b"></div>
+      <div class="st b"><div class="dot">٢</div><span>تأكد</span></div>
+      <div class="ln b"></div>
+      <div class="st b"><div class="dot">٣</div><span>بعدها تصرّف</span></div>
+    </div>
+  </div>
+  <div class="nav">6 / 11 · click to build</div>
+</section>
+
+<!-- ============ SLIDES 7–10: التحدي ============ -->
+<section class="slide paper quiz" id="s7">
+  <div class="wrap">
+    <span class="tag a a1">تحدّي الكروت · ١ من ٤</span>
+    <h1 class="a a1">شنو أول شي يديره النصّاب في رسالة الجائزة؟</h1>
+    <div class="opts">
+      <div class="opt a a2"><span class="k">A</span>يعطيك وقت تفكّر</div>
+      <div class="opt a a3 yes"><span class="k">B</span>يستعجلك</div>
+      <div class="opt a a4"><span class="k">C</span>يشرحلك التفاصيل</div>
+    </div>
+    <p class="why b">الاستعجال — عشان ما تلحقش تسأل.</p>
+  </div>
+  <div class="nav">7 / 11 · click to reveal</div>
+</section>
+
+<section class="slide paper quiz" id="s8">
+  <div class="wrap">
+    <span class="tag a a1">تحدّي الكروت · ٢ من ٤</span>
+    <h1 class="a a1">شفت رمز QR في مكان عام… شن تدير؟</h1>
+    <div class="opts">
+      <div class="opt a a2"><span class="k">A</span>نمسحه بسرعة</div>
+      <div class="opt a a3 yes"><span class="k">B</span>نسأل من حطّه ونتأكد</div>
+      <div class="opt a a4"><span class="k">C</span>نبعته لصحابي</div>
+    </div>
+    <p class="why b">الكود مجهول المصدر = رابط مجهول المصدر.</p>
+  </div>
+  <div class="nav">8 / 11 · click to reveal</div>
+</section>
+
+<section class="slide paper quiz" id="s9">
+  <div class="wrap">
+    <span class="tag a a1">تحدّي الكروت · ٣ من ٤</span>
+    <h1 class="a a1">واحد قالك «أنا من الجهة الرسمية» وطلب كلمة المرور… تعطيه؟</h1>
+    <div class="opts">
+      <div class="opt a a2"><span class="k">A</span>نعم، لو كان لابس رسمي</div>
+      <div class="opt a a3 yes"><span class="k">B</span>لا — الجهات الرسمية ما تطلبش كلمة المرور</div>
+      <div class="opt a a4"><span class="k">C</span>نعطيه نصّها بس</div>
+    </div>
+    <p class="why b">كلمة المرور ما تُطلب من حد — ولا من «الجهة الرسمية».</p>
+  </div>
+  <div class="nav">9 / 11 · click to reveal</div>
+</section>
+
+<section class="slide paper quiz" id="s10">
+  <div class="wrap">
+    <span class="tag a a1">تحدّي الكروت · ٤ من ٤</span>
+    <h1 class="a a1">لو الكل مسحوا الرمز… هل هذا يعني أنه آمن؟</h1>
+    <div class="opts">
+      <div class="opt a a2"><span class="k">A</span>نعم، العدد دليل</div>
+      <div class="opt a a3 yes"><span class="k">B</span>لا — هذا أسلوب الإجماع</div>
+      <div class="opt a a4"><span class="k">C</span>ما نعرفش</div>
+    </div>
+    <p class="why b">الإجماع يخلّيك تقلّد بدل ما تشك.</p>
+  </div>
+  <div class="nav">10 / 11 · click to reveal</div>
+</section>
+
+<!-- ============ SLIDE 11: closing ============ -->
+<section class="slide" id="s11">
+  <div>
+    <div class="big"><span class="a a1">وقف</span><span class="sep a a2">·</span><span class="a a3">تأكد</span><span class="sep a a4">·</span><span class="a a5">بعدها تصرّف</span></div>
+    <p class="a a6">شكرًا لحضوركم — والكروت للي جاوبوا صح.</p>
+  </div>
+  <div class="nav">11 / 11</div>
 </section>
 
 <script>
 (function(){
-  // ---------- slides ----------
   var slides=[].slice.call(document.querySelectorAll(".slide")), i=0;
+  slides[0].classList.add("active");
+
+  function pending(sl){ return sl.querySelectorAll(".b:not(.on)"); }
+  function buildNext(sl){
+    var p=pending(sl); if(!p.length) return false;
+    p[0].classList.add("on");
+    if(sl.classList.contains("quiz") && !pending(sl).length) sl.classList.add("reveal");
+    return true;
+  }
+  function resetBuilds(sl){ sl.querySelectorAll(".b.on").forEach(function(e){e.classList.remove("on")}); sl.classList.remove("reveal"); }
+
   function go(n){
     n=Math.max(0,Math.min(slides.length-1,n));
     if(n===i) return;
     slides[i].classList.remove("active");
-    i=n; slides[i].classList.add("active");
+    i=n; resetBuilds(slides[i]); slides[i].classList.add("active");
     if(i===1) siren.start(); else siren.stop();
     if(i===2) counter.start();
   }
-  document.addEventListener("keydown",function(e){
-    if(["ArrowRight","ArrowDown","PageDown"," ","Enter"].indexOf(e.key)>-1){e.preventDefault();go(i+1);}
-    else if(["ArrowLeft","ArrowUp","PageUp","Backspace"].indexOf(e.key)>-1){e.preventDefault();go(i-1);}
-    else if(e.key==="m"||e.key==="M"){siren.stop();}
-    else if(e.key==="f"||e.key==="F"){ (document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()); }
-    else if(e.key>="1"&&e.key<="3"){go(+e.key-1);}
-  });
-  document.addEventListener("click",function(e){ if(i===1){siren.stop();return;} go(i+1); });
+  function next(){ if(!buildNext(slides[i])) go(i+1); }
+  function prev(){ go(i-1); }
 
-  // ---------- siren (WebAudio, no file needed) ----------
+  document.addEventListener("keydown",function(e){
+    if(["ArrowRight","ArrowDown","PageDown"," ","Enter"].indexOf(e.key)>-1){e.preventDefault();next();}
+    else if(["ArrowLeft","ArrowUp","PageUp","Backspace"].indexOf(e.key)>-1){e.preventDefault();prev();}
+    else if(e.key==="m"||e.key==="M"){siren.stop();}
+    else if(e.key==="f"||e.key==="F"){(document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen());}
+    else if(e.key==="0"){go(0);} else if(e.key>="1"&&e.key<="9"){go(+e.key-1);}
+  });
+  document.addEventListener("click",function(){ if(i===1){siren.stop();return;} next(); });
+
+  /* ---------- siren (WebAudio) ---------- */
   var siren=(function(){
     var ctx,osc,gain,timer,on=false;
     function start(){
@@ -221,61 +445,47 @@
         ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();
         if(ctx.state==="suspended") ctx.resume();
         osc=ctx.createOscillator(); gain=ctx.createGain();
-        osc.type="square"; gain.gain.value=0.08;
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start();
-        var hi=true;
-        function step(){ osc.frequency.setTargetAtTime(hi?880:620, ctx.currentTime, 0.04); hi=!hi; }
+        osc.type="square"; gain.gain.value=0.08; osc.connect(gain); gain.connect(ctx.destination); osc.start();
+        var hi=true; function step(){osc.frequency.setTargetAtTime(hi?880:620,ctx.currentTime,0.04);hi=!hi;}
         step(); timer=setInterval(step,420);
       }catch(e){}
     }
-    function stop(){
-      if(!on) return; on=false;
-      clearInterval(timer);
-      try{ gain.gain.setTargetAtTime(0,ctx.currentTime,0.05); osc.stop(ctx.currentTime+0.3); }catch(e){}
-    }
+    function stop(){ if(!on) return; on=false; clearInterval(timer); try{gain.gain.setTargetAtTime(0,ctx.currentTime,0.05);osc.stop(ctx.currentTime+0.3);}catch(e){} }
     return {start:start,stop:stop};
   })();
 
-  // ---------- live counter (Supabase) ----------
+  /* ---------- live counter (Supabase) ---------- */
   var SB_URL="https://fwqmudtivzushmvpspty.supabase.co";
   var SB_KEY="sb_publishable_MRM5OjY17NkhaF4mGEmU-A_tQikiP-4";
   var el=document.getElementById("count");
   var counter=(function(){
-    var started=false, shown=0;
-    function render(n){
-      if(n===shown) return;
-      shown=n; el.textContent=n;
-      el.classList.add("bump"); setTimeout(function(){el.classList.remove("bump");},200);
+    var started=false, shown=0, target=0, rolling=false;
+    function bump(){ el.classList.add("bump"); setTimeout(function(){el.classList.remove("bump");},200); }
+    function render(n){ if(n===shown) return; shown=n; el.textContent=n; bump(); }
+    function rollTo(n){           // count-up on first open
+      rolling=true; var t0=performance.now(), dur=1400+Math.min(n,40)*20;
+      (function f(now){ var k=Math.min(1,(now-t0)/dur); k=1-Math.pow(1-k,3);
+        el.textContent=Math.round(n*k); if(k<1) requestAnimationFrame(f); else {shown=n; rolling=false; bump(); if(target!==n) render(target);} })(t0);
     }
     function fetchCount(){
-      return fetch(SB_URL+"/rest/v1/haba_demo_scans?select=id",{
-        headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Prefer":"count=exact","Range":"0-0"}
-      }).then(function(r){
-        var cr=r.headers.get("content-range")||""; var m=cr.match(/\/(\d+)/);
-        if(m) render(+m[1]);
-      }).catch(function(){});
+      return fetch(SB_URL+"/rest/v1/haba_demo_scans?select=id",{headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Prefer":"count=exact","Range":"0-0"}})
+        .then(function(r){var m=(r.headers.get("content-range")||"").match(/\/(\d+)/); if(m){target=+m[1]; if(!rolling) render(target);} }).catch(function(){});
     }
     function start(){
-      if(started) return; started=true;
-      fetchCount();
-      setInterval(fetchCount,2500);           // reliable fallback polling
-      try{                                    // realtime push for instant bumps
+      if(started){ return; } started=true;
+      fetch(SB_URL+"/rest/v1/haba_demo_scans?select=id",{headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Prefer":"count=exact","Range":"0-0"}})
+        .then(function(r){var m=(r.headers.get("content-range")||"").match(/\/(\d+)/); target=m?+m[1]:0; rollTo(target);}).catch(function(){});
+      setInterval(fetchCount,2500);
+      try{
         var s=document.createElement("script");
         s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js";
-        s.onload=function(){
-          var c=window.supabase.createClient(SB_URL,SB_KEY);
-          c.channel("haba").on("postgres_changes",{event:"INSERT",schema:"public",table:"haba_demo_scans"},function(){ fetchCount(); }).subscribe();
-        };
+        s.onload=function(){ var c=window.supabase.createClient(SB_URL,SB_KEY);
+          c.channel("haba").on("postgres_changes",{event:"INSERT",schema:"public",table:"haba_demo_scans"},function(){fetchCount();}).subscribe(); };
         document.head.appendChild(s);
       }catch(e){}
     }
     return {start:start};
   })();
-
-  // pre-warm the count silently so slide 3 shows the number instantly
-  fetch(SB_URL+"/rest/v1/haba_demo_scans?select=id",{headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Prefer":"count=exact","Range":"0-0"}})
-    .then(function(r){var m=(r.headers.get("content-range")||"").match(/\/(\d+)/); if(m) el.textContent=m[1];}).catch(function(){});
 })();
 </script>
 </body>

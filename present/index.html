@@ -49,31 +49,20 @@
     border:1px dashed var(--gold-dim);pointer-events:none;
   }
   #s1 .copy{text-align:right;padding-right:1vw}
-  .seal{
-    width:54vh;height:54vh;border-radius:50%;
-    background:#4E321E;
-    border:.55vh solid var(--gold);
-    position:relative;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:0;
-    margin:0 0 3vh auto;
-  }
-  .seal::before{
-    content:"";position:absolute;inset:1.6vh;border-radius:50%;
-    border:.25vh dashed var(--gold);
-  }
-  .seal svg{width:14vh;height:14vh;display:block;margin-bottom:1vh}
-  .seal .brand{
+  /* brand lockup: icon / name / latin — one vertical axis, right-aligned with the copy */
+  .lockup{display:flex;flex-direction:column;align-items:center;width:max-content;margin:0 0 4.5vh auto;text-align:center}
+  .lockup svg{width:13vh;height:13vh;display:block}
+  .lockup .brand{
     font-family:"Aref Ruqaa","Noto Naskh Arabic","Amiri",serif;
-    font-size:13.5vh;line-height:1.2;color:var(--cream);
+    font-size:14vh;line-height:1.3;color:var(--cream);
+    margin-top:1.5vh;
   }
-  .seal .latin{
-    direction:ltr;text-align:center;color:var(--gold);
+  .lockup .latin{
+    direction:ltr;color:var(--gold);
     font-family:"IBM Plex Sans Arabic",sans-serif;
-    margin-top:3.4vh;
+    font-size:2.6vh;letter-spacing:.42em;
+    margin-top:2.2vh;
   }
-  .seal .latin .l1{font-size:3.1vh;letter-spacing:.42em;padding-left:.42em}
-  .seal .latin .l2{font-size:2.3vh;letter-spacing:.44em;padding-left:.44em;margin-top:.9vh}
   #s1 h1{font-family:"Aref Ruqaa",serif;font-weight:400;font-size:6vh;line-height:1.2;color:var(--cream);margin-bottom:1vh}
   #s1 p{font-size:2.6vh;line-height:1.65;color:var(--cream-dim);max-width:30ch}
   #s1 p b{color:var(--cream);font-weight:600}
@@ -142,7 +131,7 @@
 <section class="slide active" id="s1">
   <div class="frame">
     <div class="copy">
-      <div class="seal" aria-label="Habba Perfumes">
+      <div class="lockup" aria-label="Habba Perfumes">
         <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
           <path d="M6 28c4 0 4-3 8-3s4 3 8 3" stroke="#CBA66B" stroke-width="1.6" stroke-linecap="round"/>
           <path d="M6 36c4 0 4-3 8-3s4 3 8 3" stroke="#CBA66B" stroke-width="1.6" stroke-linecap="round"/>
@@ -153,7 +142,7 @@
           <path d="M32 26l4 5-4 5-4-5z" fill="#3A2618"/>
         </svg>
         <div class="brand">هبّة</div>
-        <div class="latin"><div class="l1">HABBA</div><div class="l2">PERFUMES</div></div>
+        <div class="latin">HABBA PERFUMES</div>
       </div>
       <h1>هدية الافتتاح</h1>
       <p>بمناسبة افتتاح متجر هبّة للعطور، <b>سجّى</b> تهديكم كرت هدية خاص بيوم الافتتاح.</p>

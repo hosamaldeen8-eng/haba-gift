@@ -49,19 +49,21 @@
     border:1px dashed var(--gold-dim);pointer-events:none;
   }
   #s1 .copy{text-align:right;padding-right:1vw}
-  /* brand lockup: icon / name / latin — one vertical axis, right-aligned with the copy */
-  .lockup{display:flex;flex-direction:column;align-items:center;width:max-content;margin:0 0 4.5vh auto;text-align:center}
-  .lockup svg{width:13vh;height:13vh;display:block}
+  /* brand lockup: icon / name / rule / latin — one vertical axis, shared right edge */
+  .lockup{display:flex;flex-direction:column;align-items:flex-start;width:max-content;margin:0 0 4vh auto}
+  .lockup svg{width:13vh;height:13vh;display:block;margin-bottom:-3.5vh}
   .lockup .brand{
     font-family:"Aref Ruqaa","Noto Naskh Arabic","Amiri",serif;
-    font-size:14vh;line-height:1.3;color:var(--cream);
-    margin-top:1.5vh;
+    font-size:20vh;line-height:1.2;color:var(--cream);
+    padding-bottom:8vh;              /* clearance: descender of ب never reaches the rule */
   }
   .lockup .latin{
-    direction:ltr;color:var(--gold);
+    align-self:stretch;
+    direction:ltr;text-align:right;color:var(--gold);
     font-family:"IBM Plex Sans Arabic",sans-serif;
-    font-size:2.6vh;letter-spacing:.42em;
-    margin-top:2.2vh;
+    font-size:2.5vh;letter-spacing:.42em;
+    border-top:1px solid var(--gold-dim);
+    padding-top:2vh;
   }
   #s1 h1{font-family:"Aref Ruqaa",serif;font-weight:400;font-size:6vh;line-height:1.2;color:var(--cream);margin-bottom:1vh}
   #s1 p{font-size:2.6vh;line-height:1.65;color:var(--cream-dim);max-width:30ch}
